@@ -8,23 +8,34 @@ const cors = require("cors"); // Middleware for Cross-Origin Resource Sharing
 const app = express();
 
 // Connect to Database
-connectDB();
+connectDB(); // Ensure this function does not throw an unhandled error that prevents server startup
 
-// Middleware
-// Parse JSON bodies for incoming requests
-app.use(express.json());
-// Parse cookies attached to the client request object
-app.use(cookieParser());
-
-// CORS configuration
-// This is crucial for allowing your frontend (e.g., Vercel deployment) to communicate with your backend (e.g., Render deployment).
-// Replace 'http://localhost:3000' with your actual frontend URL in production (e.g., your Vercel URL).
+// --- IMPORTANT: CORS middleware should be one of the first middlewares ---
+// It needs to handle the OPTIONS preflight request before other middlewares or routes
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Allowed frontend origin(s)
-    credentials: true, // Allow sending and receiving cookies
+    origin: process.env.FRONTEND_URL, // This must be the exact URL of your frontend (e.g., 'https://auth-app-pmtn.vercel.app')
+    credentials: true, // Essential for sending/receiving HTTP-only cookies
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Explicitly allow OPTIONS method
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Accept-Version",
+      "Content-Length",
+      "Content-MD5",
+      "Date",
+      "X-Api-Version",
+      "X-CSRF-Token", // Include any custom headers your frontend might send
+    ],
   })
 );
+
+// Middleware for parsing JSON request bodies
+app.use(express.json());
+// Middleware for parsing cookies
+app.use(cookieParser());
 
 // Routes
 // All authentication-related routes will be prefixed with /api/auth
@@ -35,11 +46,12 @@ app.get("/", (req, res) => {
   res.send("MERN Auth API is running...");
 });
 
-// Global error handling middleware
+// Global error handling middleware (should be the last middleware)
 // This catches any errors thrown in your routes or other middleware
 app.use((err, req, res, next) => {
   console.error(err.stack); // Log the error stack for debugging
-  res.status(500).send("Something broke!"); // Send a generic error response
+  // In production, you might send a less verbose error message
+  res.status(500).send("Server Error: Something broke!");
 });
 
 const PORT = process.env.PORT || 5000; // Use port from environment variable or default to 5000
