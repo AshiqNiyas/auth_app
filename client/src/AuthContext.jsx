@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // To handle initial auth check
 
   // Replace with your actual backend URL
-  const API_BASE_URL = "http://localhost:5000/api/auth";
+  const API_BASE_URL = "https://auth-app-three-delta.vercel.app";
 
   useEffect(() => {
     const checkAuthStatus = async () => {
