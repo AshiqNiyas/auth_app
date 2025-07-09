@@ -36,7 +36,7 @@ router.post("/register", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true, // Makes the cookie inaccessible to client-side JavaScript
       secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-      sameSite: "Lax", // Protects against CSRF attacks, adjust to 'None' if truly cross-site and secure: true
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Protects against CSRF attacks, adjust to 'None' if truly cross-site and secure: true
       maxAge: 3600000, // Cookie expiration time in milliseconds (1 hour)
     });
 
@@ -105,7 +105,7 @@ router.post("/logout", protect, (req, res) => {
     expires: new Date(Date.now() + 10 * 1000), // Expires in 10 seconds
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
   });
   res.status(200).json({ message: "Logged out successfully" });
 });
